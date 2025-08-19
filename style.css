@@ -9,6 +9,27 @@ body {
   transition: background 0.5s ease;
 }
 
+#start-container {
+  margin-bottom: 20px;
+}
+
+#progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 20px;
+  visibility: hidden;
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background-color: green;
+  transition: width 1s linear;
+}
+
 .container {
   width: 400px;
   background: white;

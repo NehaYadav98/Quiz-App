@@ -1,12 +1,17 @@
 const questionElement = document.getElementById("question");
 const answerButtonsElement = document.getElementById("answer-buttons");
-const nextButton = document.getElementById("next-btn");
 const celebration = document.getElementById("celebration");
 const incorrectMsg = document.getElementById("incorrect");
 const scoreContainer = document.getElementById("score-container");
+const startButton = document.getElementById("start-btn");
+const startContainer = document.getElementById("start-container");
+const questionContainer = document.getElementById("question-container");
+const progressBar = document.getElementById("progress-bar");
+const progressBarContainer = document.getElementById("progress-bar-container");
 
 let currentQuestionIndex = 0;
 let score = 0;
+let autoNextTimeout;
 
 const questions = [
   {
@@ -38,7 +43,11 @@ const questions = [
   }
 ];
 
-startQuiz();
+startButton.addEventListener("click", () => {
+  startContainer.classList.add("hide");
+  questionContainer.classList.remove("hide");
+  startQuiz();
+});
 
 function startQuiz() {
   currentQuestionIndex = 0;
@@ -68,10 +77,12 @@ function showQuestion(question) {
 
 function resetState() {
   clearStatusClass(document.body);
-  nextButton.classList.add("hide");
   celebration.classList.add("hide");
   incorrectMsg.classList.add("hide");
-  document.body.style.background = "#1e4d72"; // reset background to blue
+  document.body.style.background = "#1e4d72";
+  progressBar.style.width = "0%";
+  progressBarContainer.style.visibility = "hidden";
+  clearTimeout(autoNextTimeout);
   while (answerButtonsElement.firstChild) {
     answerButtonsElement.removeChild(answerButtonsElement.firstChild);
   }
@@ -80,20 +91,37 @@ function resetState() {
 function selectAnswer(e) {
   const selectedButton = e.target;
   const correct = selectedButton.dataset.correct === "true";
+
   setStatusClass(selectedButton, correct);
   if (correct) {
     document.body.style.background = "green";
     celebration.classList.remove("hide");
-    score++; // increase score for correct answer
+    progressBar.style.backgroundColor = "green";
+    score++;
   } else {
     document.body.style.background = "red";
     incorrectMsg.classList.remove("hide");
+    progressBar.style.backgroundColor = "red";
   }
+
   Array.from(answerButtonsElement.children).forEach(button => {
     setStatusClass(button, button.dataset.correct === "true");
-    button.disabled = true; // disable after one selection
+    button.disabled = true;
   });
-  nextButton.classList.remove("hide");
+
+  progressBarContainer.style.visibility = "visible";
+  // Start animating progress bar
+  progressBar.style.width = "100%";
+  
+  // Move to next question after 2s
+  autoNextTimeout = setTimeout(() => {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+      setNextQuestion();
+    } else {
+      showScore();
+    }
+  }, 1000);
 }
 
 function setStatusClass(element, correct) {
@@ -110,22 +138,13 @@ function clearStatusClass(element) {
   element.classList.remove("wrong");
 }
 
-nextButton.addEventListener("click", () => {
-  currentQuestionIndex++;
-  if (currentQuestionIndex < questions.length) {
-    setNextQuestion();
-  } else {
-    showScore();
-  }
-});
-
 function showScore() {
   resetState();
   questionElement.innerText = "🎉 Quiz Completed!";
   scoreContainer.innerText = `✅ Your Score: ${score} / ${questions.length}`;
   scoreContainer.classList.remove("hide");
-  nextButton.classList.add("hide");
-  celebration.classList.add("hide");
-  incorrectMsg.classList.add("hide");
+  questionContainer.classList.add("hide");
+  startContainer.classList.remove("hide");
+  startButton.innerText = "Restart Quiz";
   document.body.style.background = "#1e4d72";
 }
